@@ -1,36 +1,43 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ShadowDAO
 
-## Getting Started
+ShadowDAO is a private-first DAO treasury MVP on Solana Devnet. It uses the Umbra Privacy SDK for registration, shielded token deposits, encrypted balance reads, anonymous UTXO disbursements, UTXO claiming, and compliance viewing grants.
 
-First, run the development server:
+Governance proposals and votes are stored in Postgres through Next.js API routes. The actual privacy operations remain client-side wallet-signed Umbra transactions.
+
+## Environment
+
+Required for Umbra:
+
+```bash
+NEXT_PUBLIC_SOLANA_NETWORK=devnet
+NEXT_PUBLIC_RPC_URL=...
+NEXT_PUBLIC_RPC_SUBSCRIPTIONS_URL=...
+NEXT_PUBLIC_INDEXER_API_ENDPOINT=https://utxo-indexer.api.umbraprivacy.com
+NEXT_PUBLIC_USDC_MINT=4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU
+NEXT_PUBLIC_USDT_MINT=EJwZgeZrdC8TXTQbQBoL6bfuAnFUUy1PVCMB4DYPzVaS
+```
+
+Required for shared proposal storage:
+
+```bash
+DATABASE_URL=postgres://...
+# or POSTGRES_URL=postgres://...
+# optional: POSTGRES_SSL=false for local databases without SSL
+```
+
+## Development
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run lint
+npm run build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The app auto-creates the `shadowdao_proposals` table when the proposal API is first used.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## MVP Notes
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Proposal/vote storage is now shared via Postgres, not browser `localStorage`.
+- Proposal solvency is an MVP check: the client queries the Umbra encrypted balance and only creates a proposal when the USDC balance is readable in `shared` mode and greater than the requested amount.
+- Umbra signing bridges SDK `@solana/kit` transactions to wallet-adapter `VersionedTransaction` signing so real wallets can sign registration and protocol transactions.
+- Compliance grant history is still local UI history; the grant/revoke/check transactions are real Umbra calls.
