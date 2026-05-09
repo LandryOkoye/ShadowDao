@@ -18,13 +18,19 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: `${APP_NAME} — Private Governance on Solana`,
+  title: `${APP_NAME} - Private Governance on Solana`,
   description: APP_DESCRIPTION,
+  icons: {
+    icon: "/Gemini_Generated_Image-removebg.png",
+    shortcut: "/Gemini_Generated_Image-removebg.png",
+    apple: "/Gemini_Generated_Image-removebg.png",
+  },
   keywords: ["DAO", "Solana", "privacy", "governance", "treasury", "Umbra", "ZK"],
   openGraph: {
     title: APP_NAME,
     description: APP_DESCRIPTION,
     type: "website",
+    images: ["/Gemini_Generated_Image-removebg.png"],
   },
 };
 
@@ -41,3 +47,4 @@ export default function RootLayout({
     </html>
   );
 }
+

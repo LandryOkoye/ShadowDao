@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { Shield, Vault, ScrollText, ShieldCheck, ArrowRight, Lock, Zap, Eye } from "lucide-react";
 import { Button, Badge, Card } from "@/components/ui/primitives";
@@ -62,9 +63,16 @@ export default function LandingPage() {
             border: "1px solid rgba(255, 255, 255, 0.08)",
             boxShadow: "var(--shadow-sm)",
             display: "flex", alignItems: "center", justifyContent: "center",
-            fontWeight: 700, color: "var(--text-primary)", fontSize: 16,
+            overflow: "hidden",
           }}>
-            S
+            <Image
+              src="/Gemini_Generated_Image-removebg.png"
+              alt="ShadowDAO logo"
+              width={24}
+              height={24}
+              style={{ objectFit: "contain" }}
+              priority
+            />
           </div>
           <span style={{ 
             fontFamily: "var(--font-sans)", 
@@ -257,9 +265,15 @@ export default function LandingPage() {
             border: "1px solid rgba(255, 255, 255, 0.08)",
             boxShadow: "var(--shadow-sm)",
             display: "flex", alignItems: "center", justifyContent: "center",
-            fontWeight: 700, color: "var(--text-primary)", fontSize: 12,
+            overflow: "hidden",
           }}>
-            S
+            <Image
+              src="/Gemini_Generated_Image-removebg.png"
+              alt="ShadowDAO logo"
+              width={18}
+              height={18}
+              style={{ objectFit: "contain" }}
+            />
         </div>
         <p style={{ fontSize: 13, color: "var(--text-muted)" }}>
           ShadowDAO · Built with Umbra Privacy Protocol · Solana Devnet · Hackathon MVP

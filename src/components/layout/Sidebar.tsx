@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -54,8 +55,17 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
             border: "1px solid rgba(255, 255, 255, 0.08)",
             boxShadow: "var(--shadow-sm)",
             display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 18, fontWeight: 700, color: "var(--text-primary)",
-          }}>S</div>
+            overflow: "hidden",
+          }}>
+            <Image
+              src="/Gemini_Generated_Image-removebg.png"
+              alt="ShadowDAO logo"
+              width={28}
+              height={28}
+              style={{ objectFit: "contain" }}
+              priority
+            />
+          </div>
           <span style={{
             fontFamily: "var(--font-display)",
             fontWeight: 700,
