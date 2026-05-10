@@ -120,13 +120,16 @@ export function DepositForm({ onSuccess }: { onSuccess?: () => void }) {
     try {
       info("Signing transaction", "Please approve in your wallet…");
       const result = await depositToEncryptedBalance(client, address, selectedToken.mint, lamports);
+      const queueSignature = getNestedValue(result, "queueSignature");
+      const callbackStatus = getNestedValue(result, "callbackStatus");
+      const callbackSignature = getNestedValue(result, "callbackSignature");
 
-      setQueueSig(result?.queueSignature ?? null);
+      setQueueSig(typeof queueSignature === "string" ? queueSignature : null);
       setStep("queued");
       info("Queued with Arcium MPC", "The MPC network is processing your deposit…");
 
       // Poll / listen for callback (simplified: show queued state)
-      if (result?.callbackStatus === "finalized" || result?.callbackSignature) {
+      if (callbackStatus === "finalized" || typeof callbackSignature === "string") {
         setStep("finalised");
         success("Deposit finalised!", `${amount} ${selectedToken.symbol} shielded into your encrypted balance.`);
         onSuccess?.();
