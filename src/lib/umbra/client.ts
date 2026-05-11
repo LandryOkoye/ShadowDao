@@ -11,6 +11,11 @@ import {
 // Module-level cache: one client per wallet address
 const clientCache = new Map<string, Awaited<ReturnType<typeof getUmbraClient>>>();
 
+function toErrorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  return String(err);
+}
+
 /**
  * Returns a cached Umbra client for the connected wallet.
  * Creates a new one if none exists for this wallet address.
@@ -32,15 +37,34 @@ export async function getOrCreateUmbraClient(wallet: WalletContextState) {
 
   const signer = createUmbraSigner(wallet);
 
-  const client = await getUmbraClient({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    signer: signer as any,
-    network: SOLANA_NETWORK,
-    rpcUrl: RPC_URL,
-    rpcSubscriptionsUrl: RPC_SUBSCRIPTIONS_URL,
-    indexerApiEndpoint: INDEXER_API_ENDPOINT,
-    deferMasterSeedSignature: true,
-  });
+  let client: Awaited<ReturnType<typeof getUmbraClient>>;
+  try {
+    client = await getUmbraClient({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      signer: signer as any,
+      network: SOLANA_NETWORK,
+      rpcUrl: RPC_URL,
+      rpcSubscriptionsUrl: RPC_SUBSCRIPTIONS_URL,
+      indexerApiEndpoint: INDEXER_API_ENDPOINT,
+      deferMasterSeedSignature: true,
+    });
+  } catch (err) {
+    const message = toErrorMessage(err);
+    if (
+      SOLANA_NETWORK === "devnet" &&
+      message.includes('Network configuration for "devnet" has not been populated')
+    ) {
+      throw new Error(
+        [
+          "Umbra SDK devnet config is missing in this installed build.",
+          "Fix options:",
+          "1) Use an Umbra SDK release that includes devnet network config, or",
+          "2) Switch app network to mainnet by setting NEXT_PUBLIC_SOLANA_NETWORK=mainnet.",
+        ].join(" ")
+      );
+    }
+    throw err;
+  }
 
   clientCache.set(address, client);
   return client;

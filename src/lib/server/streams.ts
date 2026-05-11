@@ -5,6 +5,7 @@ import { findProposal } from "@/lib/server/proposals";
 import { isValidSolanaAddress } from "@/lib/utils/validation";
 import { getStreamRuntime, type Stream, type StreamStatus } from "@/lib/streams/model";
 import { assertRecipientAllowedInPanic, getPanicPolicy } from "@/lib/server/panic";
+import { enforcePolicyOrThrow } from "@/lib/server/policy";
 
 type StreamRow = {
   id: string;
@@ -152,6 +153,12 @@ export async function createStream(input: CreateStreamInput): Promise<Stream> {
   const proposal = await getProposalForStream(input.proposalId);
   const panic = await getPanicPolicy();
   assertRecipientAllowedInPanic(panic, proposal.recipient);
+  await enforcePolicyOrThrow({
+    action: "stream_create",
+    recipient: proposal.recipient,
+    amountRaw: proposal.amountRaw,
+    actor: input.createdBy,
+  });
   if (proposal.recipient.trim().length === 0) throw new Error("Proposal recipient is missing.");
 
   const existing = await getPool().query<{ id: string }>(

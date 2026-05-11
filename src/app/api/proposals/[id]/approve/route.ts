@@ -5,7 +5,7 @@ import { isDatabaseConfigured } from "@/lib/server/db";
 export const dynamic = "force-dynamic";
 
 export async function POST(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   if (!isDatabaseConfigured()) {
@@ -14,7 +14,9 @@ export async function POST(
 
   try {
     const { id } = await params;
-    const proposal = await updateProposalStatus(id, "approved");
+    const body = await request.json().catch(() => ({}));
+    const actor = typeof body.actor === "string" ? body.actor : undefined;
+    const proposal = await updateProposalStatus(id, "approved", undefined, actor);
     return NextResponse.json({ proposal: serializeProposal(proposal) });
   } catch (error) {
     return NextResponse.json(

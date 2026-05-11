@@ -97,26 +97,35 @@ export function CreateProposalModal({ open, onClose, onCreated }: Props) {
             }}
           />
 
-          {/* Modal */}
-          <motion.div
-            key="modal"
-            initial={{ opacity: 0, scale: 0.92, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.92, y: 20 }}
-            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+          {/* Modal container */}
+          <div
             style={{
               position: "fixed",
-              top: "50%", left: "50%",
-              transform: "translate(-50%, -50%)",
-              width: "min(560px, 95vw)",
-              background: "var(--bg-elevated)",
-              border: "1px solid var(--border-strong)",
-              borderRadius: 20,
-              padding: 32,
+              inset: 0,
               zIndex: 201,
-              boxShadow: "0 24px 80px rgba(0,0,0,0.4)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 12,
             }}
           >
+            <motion.div
+              key="modal"
+              initial={{ opacity: 0, scale: 0.92, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: 20 }}
+              transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              style={{
+                width: "min(560px, calc(100vw - 24px))",
+                maxHeight: "calc(100vh - 24px)",
+                overflowY: "auto",
+                background: "var(--bg-elevated)",
+                border: "1px solid var(--border-strong)",
+                borderRadius: 20,
+                padding: 32,
+                boxShadow: "0 24px 80px rgba(0,0,0,0.4)",
+              }}
+            >
             {/* Header */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -156,6 +165,7 @@ export function CreateProposalModal({ open, onClose, onCreated }: Props) {
               </div>
             </div>
           </motion.div>
+          </div>
         </>
       )}
     </AnimatePresence>

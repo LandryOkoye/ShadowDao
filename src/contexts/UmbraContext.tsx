@@ -12,6 +12,7 @@ interface UmbraContextValue {
   isRegistered: boolean;
   isAnonymous: boolean;
   isInitialising: boolean;
+  initError: string | null;
   initClient: () => Promise<void>;
   refreshRegistration: () => Promise<void>;
 }
@@ -30,6 +31,7 @@ export function UmbraProvider({ children }: { children: ReactNode }) {
   const [isRegistered, setIsRegistered] = useState(false);
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [isInitialising, setIsInitialising] = useState(false);
+  const [initError, setInitError] = useState<string | null>(null);
 
   // Cache last known address so we can clear the client even after publicKey goes null on disconnect
   const lastAddressRef = useRef<string | null>(null);
@@ -37,6 +39,7 @@ export function UmbraProvider({ children }: { children: ReactNode }) {
   const initClient = useCallback(async () => {
     if (!wallet.connected || !wallet.publicKey) return;
     setIsInitialising(true);
+    setInitError(null);
     try {
       const c = await getOrCreateUmbraClient(wallet);
       lastAddressRef.current = wallet.publicKey.toBase58();
@@ -49,6 +52,7 @@ export function UmbraProvider({ children }: { children: ReactNode }) {
       setIsAnonymous(anon);
     } catch (err) {
       console.error("Umbra init error:", err);
+      setInitError(err instanceof Error ? err.message : String(err));
     } finally {
       setIsInitialising(false);
     }
@@ -79,6 +83,7 @@ export function UmbraProvider({ children }: { children: ReactNode }) {
         setClient(null);
         setIsRegistered(false);
         setIsAnonymous(false);
+        setInitError(null);
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -86,7 +91,7 @@ export function UmbraProvider({ children }: { children: ReactNode }) {
 
   return (
     <UmbraContext.Provider
-      value={{ client, isRegistered, isAnonymous, isInitialising, initClient, refreshRegistration }}
+      value={{ client, isRegistered, isAnonymous, isInitialising, initError, initClient, refreshRegistration }}
     >
       {children}
     </UmbraContext.Provider>

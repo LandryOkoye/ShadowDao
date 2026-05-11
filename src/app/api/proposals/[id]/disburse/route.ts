@@ -14,9 +14,9 @@ export async function POST(
 
   try {
     const { id } = await params;
-    const { signature } = await request.json();
+    const { signature, actor } = await request.json();
     if (!signature) throw new Error("Disbursement signature is required.");
-    const proposal = await updateProposalStatus(id, "disbursed", signature);
+    const proposal = await updateProposalStatus(id, "disbursed", signature, typeof actor === "string" ? actor : undefined);
     return NextResponse.json({ proposal: serializeProposal(proposal) });
   } catch (error) {
     return NextResponse.json(

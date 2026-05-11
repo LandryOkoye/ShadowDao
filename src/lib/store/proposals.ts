@@ -92,20 +92,23 @@ export async function castVote(
   return hydrate(payload.proposal);
 }
 
-export async function approveProposal(proposalId: string): Promise<Proposal> {
+export async function approveProposal(proposalId: string, actor?: string): Promise<Proposal> {
   const payload = await requestProposal<{ proposal: SerializedProposal }>(
     `/api/proposals/${proposalId}/approve`,
-    { method: "POST" }
+    {
+      method: "POST",
+      body: JSON.stringify(actor ? { actor } : {}),
+    }
   );
   return hydrate(payload.proposal);
 }
 
-export async function markDisbursed(proposalId: string, sig: string): Promise<Proposal> {
+export async function markDisbursed(proposalId: string, sig: string, actor?: string): Promise<Proposal> {
   const payload = await requestProposal<{ proposal: SerializedProposal }>(
     `/api/proposals/${proposalId}/disburse`,
     {
       method: "POST",
-      body: JSON.stringify({ signature: sig }),
+      body: JSON.stringify({ signature: sig, actor }),
     }
   );
   return hydrate(payload.proposal);

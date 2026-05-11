@@ -53,7 +53,7 @@ function formatRegistrationError(error: unknown): string {
 }
 
 export default function RegisterPage() {
-  const { client, isRegistered, isInitialising, refreshRegistration } = useUmbra();
+  const { client, isRegistered, isInitialising, initError, refreshRegistration } = useUmbra();
   const wallet = useWallet();
   const { connection } = useConnection();
   const { success, error, info } = useToast();
@@ -188,6 +188,12 @@ export default function RegisterPage() {
         {/* Register flow */}
         {wallet.connected && !isInitialising && (step === "check" || step === "registering" || step === "done") && (
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+            {initError && (
+              <div style={{ padding: "12px 16px", borderRadius: 10, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.3)", fontSize: 13, color: "var(--error)" }}>
+                {initError}
+              </div>
+            )}
+
             {/* TX Steps */}
             <Card style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>Transaction Steps</h3>
@@ -253,7 +259,7 @@ export default function RegisterPage() {
               <Button variant="primary" size="lg"
                 icon={<UserCheck size={18} />}
                 loading={step === "registering"}
-                disabled={!client || step === "registering"}
+                disabled={!client || !!initError || step === "registering"}
                 onClick={handleRegister}
                 style={{ width: "100%" }}>
                 {step === "registering" ? "Registering…" : "Register with Umbra"}

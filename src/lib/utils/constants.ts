@@ -1,33 +1,45 @@
 import type { Address } from "@solana/addresses";
 
+function cleanEnv(value?: string): string | undefined {
+  if (!value) return undefined;
+  return value.trim().replace(/^['"]|['"]$/g, "");
+}
+
+function normalizeNetwork(value?: string): "mainnet" | "devnet" | "localnet" {
+  const cleaned = cleanEnv(value)?.toLowerCase();
+  if (cleaned === "mainnet" || cleaned === "devnet" || cleaned === "localnet") {
+    return cleaned;
+  }
+  return "devnet";
+}
+
 // ─── Network ────────────────────────────────────────────────────────────────
 // Umbra SDK Network type: "mainnet" | "devnet" | "localnet"
 export const SOLANA_NETWORK =
-  (process.env.NEXT_PUBLIC_SOLANA_NETWORK as "mainnet" | "devnet" | "localnet") ??
-  "devnet";
+  normalizeNetwork(process.env.NEXT_PUBLIC_SOLANA_NETWORK);
 
 export const RPC_URL =
-  process.env.NEXT_PUBLIC_RPC_URL ?? "https://api.devnet.solana.com";
+  cleanEnv(process.env.NEXT_PUBLIC_RPC_URL) ?? "https://api.devnet.solana.com";
 
 export const RPC_SUBSCRIPTIONS_URL =
-  process.env.NEXT_PUBLIC_RPC_SUBSCRIPTIONS_URL ??
+  cleanEnv(process.env.NEXT_PUBLIC_RPC_SUBSCRIPTIONS_URL) ??
   "wss://api.devnet.solana.com";
 
 // ─── Umbra ───────────────────────────────────────────────────────────────────
 export const INDEXER_API_ENDPOINT =
-  process.env.NEXT_PUBLIC_INDEXER_API_ENDPOINT ??
+  cleanEnv(process.env.NEXT_PUBLIC_INDEXER_API_ENDPOINT) ??
   "https://utxo-indexer.api.umbraprivacy.com";
 
 // ─── Token Mints (Devnet) ────────────────────────────────────────────────────
 // USDC on devnet (Circle's official devnet mint)
 export const USDC_MINT = (
-  process.env.NEXT_PUBLIC_USDC_MINT ??
+  cleanEnv(process.env.NEXT_PUBLIC_USDC_MINT) ??
   "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU"
 ) as Address;
 
 // USDT on devnet (common test mint)
 export const USDT_MINT = (
-  process.env.NEXT_PUBLIC_USDT_MINT ??
+  cleanEnv(process.env.NEXT_PUBLIC_USDT_MINT) ??
   "EJwZgeZrdC8TXTQbQBoL6bfuAnFUUy1PVCMB4DYPzVaS"
 ) as Address;
 
@@ -64,4 +76,3 @@ export const ADMIN_ADDRESSES: string[] = (
   .split(",")
   .map((a) => a.trim())
   .filter(Boolean);
-

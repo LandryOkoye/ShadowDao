@@ -2,6 +2,7 @@ import { ensureSchema, getPool } from "@/lib/server/db";
 import { isValidSolanaAddress } from "@/lib/utils/validation";
 import type { Proposal, ProposalStatus, Vote } from "@/lib/store/proposals";
 import { assertRecipientAllowedInPanic, getPanicPolicy } from "@/lib/server/panic";
+import { enforcePolicyOrThrow } from "@/lib/server/policy";
 
 type ProposalRow = {
   id: string;
@@ -98,6 +99,12 @@ export async function insertProposal(input: CreateProposalInput): Promise<Propos
   await ensureSchema();
   const panic = await getPanicPolicy();
   assertRecipientAllowedInPanic(panic, input.recipient);
+  await enforcePolicyOrThrow({
+    action: "proposal_create",
+    recipient: input.recipient,
+    amountRaw: BigInt(input.amountRaw),
+    actor: input.createdBy,
+  });
 
   const now = Date.now();
   const result = await getPool().query<ProposalRow>(
@@ -152,13 +159,20 @@ export async function addVote(
 export async function updateProposalStatus(
   proposalId: string,
   status: Extract<ProposalStatus, "approved" | "disbursed">,
-  disbursementSig?: string
+  disbursementSig?: string,
+  actor?: string
 ): Promise<Proposal> {
   await ensureSchema();
+  const existing = await findProposal(proposalId);
+  if (!existing) throw new Error("Proposal not found.");
+  await enforcePolicyOrThrow({
+    action: status === "approved" ? "proposal_approve" : "proposal_disburse",
+    recipient: existing.recipient,
+    amountRaw: existing.amountRaw,
+    actor,
+  });
   if (status === "disbursed") {
     const panic = await getPanicPolicy();
-    const existing = await findProposal(proposalId);
-    if (!existing) throw new Error("Proposal not found.");
     if (panic.isArmed && panic.disbursementsFrozen) {
       assertRecipientAllowedInPanic(panic, existing.recipient);
     }

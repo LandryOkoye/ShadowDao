@@ -9,6 +9,36 @@ const connectionString =
   process.env.POSTGRES_URL ??
   process.env.POSTGRES_PRISMA_URL;
 
+function cleanEnv(value?: string): string | undefined {
+  if (!value) return undefined;
+  return value.trim().replace(/^['"]|['"]$/g, "");
+}
+
+function shouldDisableTlsVerification(): boolean {
+  const explicit = cleanEnv(process.env.POSTGRES_SSL_REJECT_UNAUTHORIZED);
+  if (explicit) return explicit.toLowerCase() === "false";
+
+  // Default to false for managed dev DBs that commonly use self-signed chains.
+  return true;
+}
+
+function buildPoolConfig() {
+  if (!connectionString) return null;
+
+  const raw = cleanEnv(connectionString)!;
+  const url = new URL(raw);
+  const sslMode = (url.searchParams.get("sslmode") ?? "").toLowerCase();
+  const sslDisabled = cleanEnv(process.env.POSTGRES_SSL)?.toLowerCase() === "false";
+
+  const baseConnectionString = `${url.origin}${url.pathname}`;
+  const ssl =
+    sslDisabled || sslMode === "disable"
+      ? false
+      : { rejectUnauthorized: !shouldDisableTlsVerification() };
+
+  return { connectionString: baseConnectionString, ssl };
+}
+
 export function isDatabaseConfigured() {
   return Boolean(connectionString);
 }
@@ -19,13 +49,11 @@ export function getPool() {
   }
 
   if (!globalThis.shadowdaoPgPool) {
-    globalThis.shadowdaoPgPool = new Pool({
-      connectionString,
-      ssl:
-        process.env.POSTGRES_SSL === "false"
-          ? false
-          : { rejectUnauthorized: false },
-    });
+    const config = buildPoolConfig();
+    if (!config) {
+      throw new Error("Postgres is not configured. Set DATABASE_URL or POSTGRES_URL.");
+    }
+    globalThis.shadowdaoPgPool = new Pool(config);
   }
 
   return globalThis.shadowdaoPgPool;
@@ -112,5 +140,34 @@ export async function ensureSchema() {
 
     CREATE INDEX IF NOT EXISTS shadowdao_panic_audit_logs_created_at_idx
       ON shadowdao_panic_audit_logs (created_at DESC);
+
+    CREATE TABLE IF NOT EXISTS shadowdao_policy_engine (
+      id TEXT PRIMARY KEY,
+      is_enabled BOOLEAN NOT NULL DEFAULT TRUE,
+      blocked_jurisdictions JSONB NOT NULL DEFAULT '[]'::jsonb,
+      allowed_jurisdictions JSONB NOT NULL DEFAULT '[]'::jsonb,
+      max_amount_by_risk JSONB NOT NULL DEFAULT '{"low":"5000000000","medium":"2000000000","high":"500000000"}'::jsonb,
+      require_admin_for_high_risk BOOLEAN NOT NULL DEFAULT TRUE,
+      updated_at BIGINT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS shadowdao_recipient_profiles (
+      recipient TEXT PRIMARY KEY,
+      jurisdiction TEXT NOT NULL,
+      risk_level TEXT NOT NULL CHECK (risk_level IN ('low','medium','high')),
+      category TEXT NOT NULL DEFAULT 'general',
+      updated_at BIGINT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS shadowdao_policy_audit_logs (
+      id TEXT PRIMARY KEY,
+      actor TEXT NOT NULL,
+      action TEXT NOT NULL,
+      details JSONB NOT NULL DEFAULT '{}'::jsonb,
+      created_at BIGINT NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS shadowdao_policy_audit_logs_created_at_idx
+      ON shadowdao_policy_audit_logs (created_at DESC);
   `);
 }

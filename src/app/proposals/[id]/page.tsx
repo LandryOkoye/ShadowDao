@@ -138,7 +138,7 @@ export default function ProposalDetailPage() {
       );
 
       const primarySig = sigs[sigs.length - 1] ?? sigs[0];
-      const updated = await markDisbursed(proposal.id, primarySig);
+      const updated = await markDisbursed(proposal.id, primarySig, walletAddress || undefined);
       setDisburseSigs(sigs);
       setDisburseStep("done");
       setProposal(updated);

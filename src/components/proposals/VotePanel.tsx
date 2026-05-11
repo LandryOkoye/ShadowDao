@@ -52,9 +52,10 @@ export function VotePanel({ proposal, onUpdate, isAdmin = false }: Props) {
   };
 
   const approve = async () => {
+    if (!address) { error("Wallet not connected"); return; }
     setLoading("approve");
     try {
-      const updated = await approveProposal(proposal.id);
+      const updated = await approveProposal(proposal.id, address);
       success("Proposal approved!", "Ready for disbursement.");
       onUpdate(updated);
     } catch (e) {
