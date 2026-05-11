@@ -13,25 +13,21 @@ const FEATURES = [
     icon: <Vault size={24} />,
     title: "Shielded Treasury",
     description: "Deposit SPL tokens into Umbra's encrypted balance. Your treasury holdings are cryptographically hidden — even from your counterparty.",
-    badge: "Real",
   },
   {
     icon: <Zap size={24} />,
     title: "Anonymous Disbursements",
     description: "Route approved payments through the Umbra UTXO mixer. Recipients receive funds with zero linkability to the sender.",
-    badge: "Real",
   },
   {
     icon: <ScrollText size={24} />,
     title: "Private Governance",
     description: "Create and vote on funding proposals without revealing amounts. ZK solvency proofs confirm the DAO can pay without exposing balances.",
-    badge: "Simulated",
   },
   {
     icon: <ShieldCheck size={24} />,
     title: "Selective Compliance",
     description: "Grant time-boxed viewing key access to auditors. Revoke at any time. Full on-chain auditability with minimal disclosure.",
-    badge: "Real",
   },
 ];
 
@@ -208,9 +204,6 @@ export default function LandingPage() {
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
                   <h3 style={{ fontSize: 18, fontWeight: 600 }}>{f.title}</h3>
-                  <Badge variant={f.badge === "Real" ? "teal" : "gray"}>
-                    {f.badge}
-                  </Badge>
                 </div>
                 <p style={{ fontSize: 15, color: "var(--text-secondary)", lineHeight: 1.6, flexGrow: 1 }}>
                   {f.description}
