@@ -30,13 +30,16 @@ function buildPoolConfig() {
   const sslMode = (url.searchParams.get("sslmode") ?? "").toLowerCase();
   const sslDisabled = cleanEnv(process.env.POSTGRES_SSL)?.toLowerCase() === "false";
 
-  const baseConnectionString = `${url.origin}${url.pathname}`;
+  // Preserve protocol, credentials, host, port, and path.
+  // `origin` is unreliable for non-HTTP schemes like `postgres://`.
+  url.search = "";
+  const normalizedConnectionString = url.toString();
   const ssl =
     sslDisabled || sslMode === "disable"
       ? false
       : { rejectUnauthorized: !shouldDisableTlsVerification() };
 
-  return { connectionString: baseConnectionString, ssl };
+  return { connectionString: normalizedConnectionString, ssl };
 }
 
 export function isDatabaseConfigured() {
